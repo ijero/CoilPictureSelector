@@ -19,7 +19,7 @@ import com.luck.picture.lib.widget.longimage.ImageViewState
 import com.luck.picture.lib.widget.longimage.SubsamplingScaleImageView
 
 class CoilEngine : ImageEngine {
-    companion object{
+    companion object {
         @Volatile
         private var mInstance: CoilEngine? = null
 
@@ -45,8 +45,7 @@ class CoilEngine : ImageEngine {
      * @param imageView
      */
     override fun loadImage(context: Context, url: String, imageView: ImageView) {
-//        logE("加载的图片地址11111111$url")
-        imageView.load(url)
+        imageView.loadImage(url)
     }
 
     /**
@@ -59,8 +58,14 @@ class CoilEngine : ImageEngine {
      * @param longImageView
      * @param callback      网络图片加载回调监听 {link after version 2.5.1 Please use the #OnImageCompleteCallback#}
      */
-    override fun loadImage(context: Context, url: String, imageView: ImageView, longImageView: SubsamplingScaleImageView, callback: OnImageCompleteCallback?) {
-        imageView.load(url) {
+    override fun loadImage(
+        context: Context,
+        url: String,
+        imageView: ImageView,
+        longImageView: SubsamplingScaleImageView,
+        callback: OnImageCompleteCallback?
+    ) {
+        imageView.loadImage(url) {
             target({
                 // onStart
                 callback?.onShowLoading()
@@ -106,7 +111,12 @@ class CoilEngine : ImageEngine {
      * @param longImageView
      * @ 已废弃
      */
-    override fun loadImage(context: Context, url: String, imageView: ImageView, longImageView: SubsamplingScaleImageView?) {
+    override fun loadImage(
+        context: Context,
+        url: String,
+        imageView: ImageView,
+        longImageView: SubsamplingScaleImageView?
+    ) {
     }
 
 
@@ -119,7 +129,7 @@ class CoilEngine : ImageEngine {
      */
     override fun loadFolderImage(context: Context, url: String, imageView: ImageView) {
         imageView.scaleType = ImageView.ScaleType.FIT_CENTER
-        imageView.load(url) {
+        imageView.loadImage(url) {
             size(180, 180)
             transformations()
             placeholder(R.drawable.picture_image_placeholder)
@@ -150,7 +160,7 @@ class CoilEngine : ImageEngine {
                 add(GifDecoder())
             }
         }.build()
-        imageView.load(url, imageLoader)
+        imageView.loadImage(url, imageLoader)
     }
 
     /**
@@ -162,9 +172,10 @@ class CoilEngine : ImageEngine {
      */
     override fun loadGridImage(context: Context, url: String, imageView: ImageView) {
         imageView.scaleType = ImageView.ScaleType.CENTER_CROP
-        imageView.load(url) {
+        imageView.loadImage(url) {
             size(200, 200)
             placeholder(R.drawable.picture_image_placeholder)
         }
     }
+
 }
