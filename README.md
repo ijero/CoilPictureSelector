@@ -1,7 +1,5 @@
-CoilEngine 示例工程
+- CoilEngine 兼容Android版本示例工程
 
-运行结果：
+不同版本运行结果：
 
-<img src="image/1.png" width="300px" />
-
-<img src="image/2.png" width="300px" />
+<img src="image/1.jpg" />
