@@ -3,6 +3,7 @@ package cn.ijero.coilpictureselector
 import android.content.Context
 import android.graphics.PointF
 import android.graphics.drawable.BitmapDrawable
+import android.os.Build
 import android.os.Build.VERSION.SDK_INT
 import android.view.View
 import android.widget.ImageView
@@ -10,32 +11,30 @@ import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory
 import coil.ImageLoader
 import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
+import coil.imageLoader
 import coil.load
+import coil.request.ImageRequest
 import com.luck.picture.lib.engine.ImageEngine
 import com.luck.picture.lib.listener.OnImageCompleteCallback
 import com.luck.picture.lib.tools.MediaUtils
 import com.luck.picture.lib.widget.longimage.ImageSource
 import com.luck.picture.lib.widget.longimage.ImageViewState
 import com.luck.picture.lib.widget.longimage.SubsamplingScaleImageView
+import java.io.File
 
-class CoilEngine : ImageEngine {
+class CoilEngine private constructor() : ImageEngine {
     companion object {
-        @Volatile
-        private var mInstance: CoilEngine? = null
+        private var INSTANCE: CoilEngine? = null
 
-        val instance: CoilEngine?
-            get() {
-                if (mInstance == null) {
-                    synchronized(CoilEngine::class.java) {
-                        if (mInstance == null) {
-                            mInstance = CoilEngine()
-                        }
-                    }
+        @JvmStatic
+        fun create(): CoilEngine {
+            return INSTANCE ?: synchronized(this) {
+                INSTANCE ?: CoilEngine().also {
+                    INSTANCE = it
                 }
-                return mInstance
             }
+        }
     }
-
 
     /**
      * 加载图片
@@ -59,8 +58,7 @@ class CoilEngine : ImageEngine {
      * @param callback      网络图片加载回调监听 {link after version 2.5.1 Please use the #OnImageCompleteCallback#}
      */
     override fun loadImage(
-        context: Context,
-        url: String,
+        context: Context, url: String,
         imageView: ImageView,
         longImageView: SubsamplingScaleImageView,
         callback: OnImageCompleteCallback?
@@ -100,7 +98,6 @@ class CoilEngine : ImageEngine {
         }
     }
 
-
     /**
      * 加载网络图片适配长图方案
      * # 注意：此方法只有加载网络图片才会回调
@@ -112,13 +109,12 @@ class CoilEngine : ImageEngine {
      * @ 已废弃
      */
     override fun loadImage(
-        context: Context,
-        url: String,
+        context: Context, url: String,
         imageView: ImageView,
-        longImageView: SubsamplingScaleImageView?
+        longImageView: SubsamplingScaleImageView
     ) {
-    }
 
+    }
 
     /**
      * 加载相册目录
@@ -143,7 +139,9 @@ class CoilEngine : ImageEngine {
                 imageView.setImageDrawable(circularBitmapDrawable)
             }
         }
+
     }
+
 
     /**
      * 加载gif
@@ -152,7 +150,10 @@ class CoilEngine : ImageEngine {
      * @param url       图片路径
      * @param imageView 承载图片ImageView
      */
-    override fun loadAsGifImage(context: Context, url: String, imageView: ImageView) {
+    override fun loadAsGifImage(
+        context: Context, url: String,
+        imageView: ImageView
+    ) {
         val imageLoader = ImageLoader.Builder(context).componentRegistry {
             if (SDK_INT >= 28) {
                 add(ImageDecoderDecoder(context))
@@ -178,4 +179,16 @@ class CoilEngine : ImageEngine {
         }
     }
 
+}
+
+fun ImageView.loadImage(
+    url: String,
+    imageLoader: ImageLoader = context.imageLoader,
+    builder: ImageRequest.Builder.() -> Unit = {}
+) {
+    if (url.startsWith("http") || url.startsWith("https") || Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        load(url, imageLoader, builder)
+    } else {
+        load(File(url), imageLoader, builder)
+    }
 }

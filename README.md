@@ -5,9 +5,8 @@
 <img src="image/1.jpg" />
 
 ## 操作步骤
-- 1. 将这两个类复制到自己的工程中
+- 1. 将这个类复制到自己的工程中
 > https://github.com/ijero/CoilPictureSelector/blob/master/app/src/main/java/cn/ijero/coilpictureselector/CoilEngine.kt
-> https://github.com/ijero/CoilPictureSelector/blob/master/app/src/main/java/cn/ijero/coilpictureselector/CoilCompat.kt
 
 ## 调用方式：
 
