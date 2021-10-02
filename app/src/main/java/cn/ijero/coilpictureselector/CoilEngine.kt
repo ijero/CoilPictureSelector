@@ -1,17 +1,21 @@
-package cn.ijero.coilpictureselector
+package cn.pcncn.cixian.util
 
 import android.content.Context
 import android.graphics.PointF
 import android.graphics.drawable.BitmapDrawable
+import android.net.Uri
 import android.os.Build
 import android.os.Build.VERSION.SDK_INT
 import android.view.View
 import android.widget.ImageView
 import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory
+import cn.pcncn.cixian.R
 import coil.ImageLoader
 import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
-import coil.imageLoader
+import coil.decode.VideoFrameDecoder
+import coil.fetch.VideoFrameFileFetcher
+import coil.fetch.VideoFrameUriFetcher
 import coil.load
 import coil.request.ImageRequest
 import com.luck.picture.lib.engine.ImageEngine
@@ -23,17 +27,9 @@ import com.luck.picture.lib.widget.longimage.SubsamplingScaleImageView
 import java.io.File
 
 class CoilEngine private constructor() : ImageEngine {
-    companion object {
-        private var INSTANCE: CoilEngine? = null
 
-        @JvmStatic
-        fun create(): CoilEngine {
-            return INSTANCE ?: synchronized(this) {
-                INSTANCE ?: CoilEngine().also {
-                    INSTANCE = it
-                }
-            }
-        }
+    companion object {
+        val instance by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { CoilEngine() }
     }
 
     /**
@@ -61,7 +57,7 @@ class CoilEngine private constructor() : ImageEngine {
         context: Context, url: String,
         imageView: ImageView,
         longImageView: SubsamplingScaleImageView,
-        callback: OnImageCompleteCallback?
+        callback: OnImageCompleteCallback?,
     ) {
         imageView.loadImage(url) {
             target({
@@ -111,7 +107,7 @@ class CoilEngine private constructor() : ImageEngine {
     override fun loadImage(
         context: Context, url: String,
         imageView: ImageView,
-        longImageView: SubsamplingScaleImageView
+        longImageView: SubsamplingScaleImageView,
     ) {
 
     }
@@ -152,7 +148,7 @@ class CoilEngine private constructor() : ImageEngine {
      */
     override fun loadAsGifImage(
         context: Context, url: String,
-        imageView: ImageView
+        imageView: ImageView,
     ) {
         val imageLoader = ImageLoader.Builder(context).componentRegistry {
             if (SDK_INT >= 28) {
@@ -179,16 +175,29 @@ class CoilEngine private constructor() : ImageEngine {
         }
     }
 
-}
+    private fun ImageView.loadImage(
+        url: String,
+        imageLoader: ImageLoader = context.imageLoader(),
+        builder: ImageRequest.Builder.() -> Unit = {},
+    ) {
+        if (SDK_INT >= Build.VERSION_CODES.Q) {
+            if (url.startsWith("content://")) {
+                load(Uri.parse(url), imageLoader, builder)
+            } else {
+                load(url, imageLoader, builder)
+            }
+        } else {
+            load(File(url), imageLoader, builder)
+        }
+    }
 
-fun ImageView.loadImage(
-    url: String,
-    imageLoader: ImageLoader = context.imageLoader,
-    builder: ImageRequest.Builder.() -> Unit = {}
-) {
-    if (url.startsWith("http") || url.startsWith("https") || Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-        load(url, imageLoader, builder)
-    } else {
-        load(File(url), imageLoader, builder)
+    private fun Context.imageLoader(): ImageLoader {
+        return ImageLoader.Builder(this)
+            .componentRegistry {
+                add(VideoFrameFileFetcher(this@imageLoader))
+                add(VideoFrameUriFetcher(this@imageLoader))
+                add(VideoFrameDecoder(this@imageLoader))
+            }
+            .build()
     }
 }
