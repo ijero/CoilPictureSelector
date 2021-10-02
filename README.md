@@ -10,6 +10,14 @@
 - 1. 将这个类复制到自己的工程中
 > https://github.com/ijero/CoilPictureSelector/blob/master/app/src/main/java/cn/ijero/coilpictureselector/CoilEngine.kt
 
+## 视频缩略图支持
+- 引入Coil依赖的时候要增加coil-video库：
+
+// coil
+implementation("io.coil-kt:coil:1.3.2")
+implementation("io.coil-kt:coil-gif:1.3.2")
+implementation("io.coil-kt:coil-video:1.3.2")
+
 ## 调用方式：
 
 ```kotlin
